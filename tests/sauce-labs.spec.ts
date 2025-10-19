@@ -1,94 +1,84 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures/inventoryFixture';
 import { getFakeUser } from './utils/fakeUser';
 import { LoginPage } from './pages/loginPage';
-import InventoryPage from './pages/inventoryPage';
+import InventoryPage from './pages/InventoryPage';
 import { describe } from 'node:test';
 
-
-test.describe('Product Browsing and Filtering', (  ) => {
+test.describe('Product Browsing and Filtering', () => {
 
   test.beforeEach(async ({ page }) => {
     await page.goto('https://www.saucedemo.com/inventory.html');
   });
 
-  test('PBF-001: should display products on the Products page', async ({ page }) => {
-
-    await expect(page.locator('[data-test="title"]')).toBeVisible();
-    const inventoryPage = new InventoryPage(page)
+  test('PBF-001: should display products on the Products page', async ({ inventoryPage }) => {
 
     // Expects page to have a heading with the name of Products.
-    await expect(page.locator('[data-test="title"]')).toHaveText("Products");
+    await expect(inventoryPage.title).toBeVisible();
+    await expect(inventoryPage.title).toHaveText("Products");
+    
   });
 
-  test('PBF-002: should sort products from A to Z', async ({ page }) => {
-    const inventoryPage = new InventoryPage(page)
-     
+  test('PBF-002: should sort products from A to Z', async ({ inventoryPage }) => {
 
-    await page.locator('[data-test="product-sort-container"]').click();
-
+    await expect(inventoryPage.title).toHaveText("Products");
     // Click on the sort dropdown and select A-Z sorting option
-     
-    console.log(await page.locator("//*[@id='inventory_container']/div/div[1]/div[2]/div[1]/a/div").innerText());
-    await expect(page.locator("//*[@id='inventory_container']/div/div[1]/div[2]/div[1]/a/div")).toHaveText("Sauce Labs Backpack");
+    await inventoryPage.sortProductsBy('az');
+    await expect(inventoryPage.firstItem).toHaveText("Sauce Labs Backpack");
+
   });
 
-  test('PBF-003: should sort products from Z to A', async ({ page }) => {
-     
-    // Expects page to have a heading with the name of Products.
-    await expect(page.locator('[data-test="title"]')).toBeVisible();
+  test('PBF-003: should sort products from Z to A', async ({ page, inventoryPage }) => {
 
-    await page.locator('[data-test="product-sort-container"]').click();
-
-    // Click on the sort dropdown and select Z-A sorting option
-    await page.locator('[data-test="product-sort-container"]').selectOption('za');
-    console.log(await page.locator("//*[@id='inventory_container']/div/div[1]/div[2]/div[1]/a/div").innerText());
-    await expect(page.locator("//*[@id='inventory_container']/div/div[1]/div[2]/div[1]/a/div")).toHaveText("Test.allTheThings() T-Shirt (Red)");
+    await expect(inventoryPage.title).toHaveText("Products");
+    await inventoryPage.sortProductsBy('za');
+    await expect(inventoryPage.firstItem).toHaveText("Test.allTheThings() T-Shirt (Red)");
+  
   });
 
-  test ('PBF-004: should sort products by price low to high', async ({ page }) => {
-     
+  test ('PBF-004: should sort products by price low to high', async ({ inventoryPage }) => {
+
     // Expects page to have a heading with the name of Products.
-    await expect(page.locator('[data-test="title"]')).toBeVisible();
+    await expect(inventoryPage.title).toHaveText("Products");
 
     // Click on the sort dropdown and select Price (low to high) sorting option
-    await page.locator('[data-test="product-sort-container"]').selectOption('lohi');
-    await expect(page.locator("//*[@id='inventory_container']/div/div[1]/div[2]/div[2]/div[1]")).toHaveText("$7.99");
+    await inventoryPage.sortProductsBy('lohi');
+    await expect(inventoryPage.inventoryItemPrice.first()).toHaveText("$7.99");
   });
 
-  test ('PBF-005: should sort products by price high to low', async ({ page }) => {
-     
+  test ('PBF-005: should sort products by price high to low', async ({ inventoryPage }) => {
+
     // Expects page to have a heading with the name of Products.
-    await expect(page.locator('[data-test="title"]')).toBeVisible();
+    await expect(inventoryPage.title).toHaveText("Products");
 
     // Click on the sort dropdown and select Price (high to low) sorting option
-    await page.locator('[data-test="product-sort-container"]').selectOption('hilo');
-    console.log(await page.locator("//*[@id='inventory_container']/div/div[1]/div[2]/div[2]/div[1]").innerText());
-    await expect(page.locator("//*[@id='inventory_container']/div/div[1]/div[2]/div[2]/div[1]")).toHaveText("$49.99");
+    await inventoryPage.sortProductsBy('hilo');
+    await expect(inventoryPage.inventoryItemPrice.first()).toHaveText("$49.99");
   });
 
-  test('PBF-006: should navigate to product details page', async ({ page }) => {
+  test('PBF-006: should navigate to product details page', async ({ inventoryPage }) => {
      
     // Expects page to have a heading with the name of Products.
-    await expect(page.locator('[data-test="title"]')).toBeVisible();
+    await expect(inventoryPage.title).toHaveText("Products");
 
     // Click on an item to view its details
-    await page.locator('[data-test="item-4-title-link"]').click();
+    await inventoryPage.firstItemTitle.click();
     // Expects page to have a heading with the name of the product 
-    await expect(page.locator('[data-test="inventory-item-name"]')).toHaveText("Sauce Labs Backpack");
+    await expect(inventoryPage.inventoryItemName).toHaveText("Sauce Labs Backpack");
+  
   });
 
-  test('PBF-007: should navigate back to Products page from product details', async ({ page }) => {
+  test('PBF-007: should navigate back to Products page from product details', async ({ page, inventoryPage}) => {
      
     // Expects page to have a heading with the name of Products.
-    await expect(page.locator('[data-test="title"]')).toBeVisible();
+    await expect(inventoryPage.title).toHaveText("Products");
 
     // Click on an item to view its details
-    await page.locator('[data-test="item-4-title-link"]').click();
-    // Expects page to have a heading with the name of the product 
-    await expect(page.locator('[data-test="inventory-item-name"]')).toHaveText("Sauce Labs Backpack");
-    
+    await inventoryPage.firstItemTitle.click();
+    // Expects page to have a heading with the name of the product
+    await expect(inventoryPage.inventoryItemName).toHaveText("Sauce Labs Backpack");
+
     // Click on the back button
-    await page.locator('[data-test="back-to-products"]').click();
+    await inventoryPage.backToProductsButton.click();
   });
 
 });
